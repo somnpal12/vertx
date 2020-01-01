@@ -1,13 +1,10 @@
 package com.sample.vert_web_crud.verticles;
 
 
-import com.sample.vert_web_crud.MainVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -23,7 +20,7 @@ public class WebControllerVerticle extends AbstractVerticle {
 
     router.route("/api/employee*").handler(BodyHandler.create());
     router.get("/api/employee").handler(this::getEmployees);
-
+    router.get("/api/employee/:id").handler(this::getEmployeeById);
 
     vertx.createHttpServer()
       .requestHandler(router)
@@ -36,6 +33,24 @@ public class WebControllerVerticle extends AbstractVerticle {
       });
   }
 
+
+  private void getEmployeeById(RoutingContext routingContext){
+    String employeeId = routingContext.request().getParam("id");
+    logger.debug(" id : {}", employeeId );
+    DeliveryOptions options = new DeliveryOptions().addHeader("employeeId",employeeId);
+
+    vertx.eventBus().request("SearchEmployeeById", null,options, reply -> {
+      if (reply.succeeded()) {
+        logger.info(reply.result().body().toString());
+        JsonArray jsonArray = (JsonArray) reply.result().body();
+        routingContext.response().putHeader("content-type", "application/json").setStatusCode(200)
+          .end(jsonArray.toString());
+      } else {
+         logger.warn("", reply.cause());
+      }
+    });
+  }
+
   //https://github.com/vert-x3/vertx-service-proxy/blob/master/src/main/java/examples/Examples.java
   private void getEmployees(RoutingContext routingContext) {
     DeliveryOptions options = new DeliveryOptions().addHeader("action", "employees");
@@ -43,9 +58,9 @@ public class WebControllerVerticle extends AbstractVerticle {
     vertx.eventBus().request("ShowAllEmployee", null,options, reply -> {
         if (reply.succeeded()) {
           logger.info(reply.result().body().toString());
-          JsonObject jsonObject = (JsonObject) reply.result().body();
+          JsonArray jsonArray = (JsonArray) reply.result().body();
           routingContext.response().putHeader("content-type", "application/json").setStatusCode(200)
-            .end(jsonObject.toString());
+            .end(jsonArray.toString());
         } else {
           // routingContext.response().setStatusCode(500).end("No records found...");
           logger.warn("", reply.cause());
