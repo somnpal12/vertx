@@ -4,7 +4,9 @@ package com.sample.vert_web_crud.verticles;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -21,6 +23,7 @@ public class WebControllerVerticle extends AbstractVerticle {
     router.route("/api/employee*").handler(BodyHandler.create());
     router.get("/api/employee").handler(this::getEmployees);
     router.get("/api/employee/:id").handler(this::getEmployeeById);
+    router.post("/api/employee").handler(this::saveEmployee);
 
     vertx.createHttpServer()
       .requestHandler(router)
@@ -33,6 +36,22 @@ public class WebControllerVerticle extends AbstractVerticle {
       });
   }
 
+  private void saveEmployee(RoutingContext routingContext){
+    JsonObject jsonObject =  routingContext.getBodyAsJson();
+    DeliveryOptions options = new DeliveryOptions();
+    logger.debug(jsonObject.toString());
+    vertx.eventBus().request("SaveEmployee",jsonObject,options,reply ->{
+        if(reply.succeeded()){
+          JsonArray jsonArray = (JsonArray) reply.result().body();
+          routingContext.response().putHeader("content-type", "application/json").setStatusCode(201).end(jsonArray.toString());
+        }else {
+          ReplyException  replyException = (ReplyException) reply.cause();
+          routingContext.response().putHeader("content-type", "application/json").setStatusCode(replyException.failureCode()).end(replyException.getMessage());
+        }
+    });
+
+
+  }
 
   private void getEmployeeById(RoutingContext routingContext){
     String employeeId = routingContext.request().getParam("id");

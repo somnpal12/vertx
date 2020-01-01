@@ -21,6 +21,24 @@ public class DataAccessVerticle extends AbstractVerticle {
     client = dbInit();
     vertx.eventBus().consumer("ShowAllEmployee", this::fetchEmployeeListHandler);
     vertx.eventBus().consumer("SearchEmployeeById", this::findEmployeeByIdHandler);
+    vertx.eventBus().consumer("SaveEmployee", this::saveEmployeeHandler);
+
+  }
+
+  private void saveEmployeeHandler(Message msg){
+    JsonObject jsonObject = (JsonObject) msg.body();
+    Tuple tuple = Tuple.of(jsonObject.getString("name"),jsonObject.getInteger("age"),jsonObject.getString("address"),jsonObject.getDouble("salary"));
+    logger.debug(jsonObject.toString());
+    logger.debug("Insert Query :: {}",QUERY_INSERT_EMPLOYEE);
+    client.preparedQuery(QUERY_INSERT_EMPLOYEE,tuple,rowSetAsyncResult -> {
+      if(rowSetAsyncResult.succeeded()){
+        msg.reply(new JsonArray().add("New Employee Created !"));
+      }else {
+        logger.error("failed :: ",rowSetAsyncResult.cause());
+        msg.fail(500,rowSetAsyncResult.cause().getMessage());
+      }
+    });
+    //client.close();
   }
 
   private void findEmployeeByIdHandler(Message msg){
@@ -44,8 +62,9 @@ public class DataAccessVerticle extends AbstractVerticle {
         msg.reply(jsonArray);
       }else{
         logger.error("failed :: ",rowSetAsyncResult.cause());
+        msg.reply(rowSetAsyncResult.cause().getMessage());
       }
-      client.close();
+      //client.close();
     });
 
   }
@@ -110,7 +129,7 @@ public class DataAccessVerticle extends AbstractVerticle {
 
   private static String QUERY_FETCH_ALL_EMPLOYEE = "SELECT * FROM sample.\"EMPLOYEE\"";
   private static String QUERY_FIND_EMPLOYEE_BY_ID = "SELECT * FROM sample.\"EMPLOYEE\" WHERE \"ID\" = $1";
-  private static String QUERY_INSERT_EMPLOYEE = "INSERT INTO sample.\"EMPLOYEE\"(\"ID\", \"NAME\", \"AGE\", \"ADDRESS\", \"SALARY\") VALUES($1,$2,$3,$4)";
+  private static String QUERY_INSERT_EMPLOYEE = "INSERT INTO sample.\"EMPLOYEE\"(\"NAME\", \"AGE\", \"ADDRESS\", \"SALARY\") VALUES($1,$2,$3,$4)";
   private static String QUERY_UPDATE_EMPLOYEE = "UPDATE sample.\"EMPLOYEE\" SET \"SALARY\"=$1 WHERE \"ID\" = $2 " ;
   private static String QUERY_DELETE_EMPLOYEE = "DELETE FROM sample.\"EMPLOYEE\" WHERE \"ID\" = $1" ;
 
