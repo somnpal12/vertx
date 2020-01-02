@@ -24,6 +24,8 @@ public class WebControllerVerticle extends AbstractVerticle {
     router.get("/api/employee").handler(this::getEmployees);
     router.get("/api/employee/:id").handler(this::getEmployeeById);
     router.post("/api/employee").handler(this::saveEmployee);
+    router.put("/api/employee").handler(this::updateEmployee);
+    router.delete("/api/employee/:id").handler(this::deleteEmployee);
 
     vertx.createHttpServer()
       .requestHandler(router)
@@ -34,6 +36,19 @@ public class WebControllerVerticle extends AbstractVerticle {
           logger.warn("", httpServerAsyncResult.cause());
         }
       });
+  }
+
+  private  void deleteEmployee(RoutingContext routingContext){
+    String employeeId = routingContext.request().getParam("id");
+    logger.debug(" id : {}", employeeId );
+
+    routingContext.response().setStatusCode(200).end(employeeId);
+  }
+
+  private  void updateEmployee(RoutingContext routingContext){
+    JsonObject jsonObject =  routingContext.getBodyAsJson();
+    logger.debug(jsonObject.toString());
+    routingContext.response().setStatusCode(200).end(jsonObject.toString());
   }
 
   private void saveEmployee(RoutingContext routingContext){
