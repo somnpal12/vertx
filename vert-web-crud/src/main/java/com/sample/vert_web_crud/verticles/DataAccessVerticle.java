@@ -22,7 +22,34 @@ public class DataAccessVerticle extends AbstractVerticle {
     vertx.eventBus().consumer("ShowAllEmployee", this::fetchEmployeeListHandler);
     vertx.eventBus().consumer("SearchEmployeeById", this::findEmployeeByIdHandler);
     vertx.eventBus().consumer("SaveEmployee", this::saveEmployeeHandler);
+    vertx.eventBus().consumer("UpdateEmployee", this::updateEmployeeHandler);
+    vertx.eventBus().consumer("DeleteEmployee", this::deleteEmployeeHandler);
 
+  }
+
+  private void updateEmployeeHandler(Message message){
+    JsonObject jsonObject = (JsonObject) message.body();
+    Tuple tuple = Tuple.of(jsonObject.getDouble("salary"),Integer.parseInt(message.headers().get("employeeId")));
+    client.preparedQuery(QUERY_UPDATE_EMPLOYEE,tuple, ar ->{
+      if(ar.succeeded()){
+        message.reply(new JsonArray().add("Employee Data Updated !"));
+      }else{
+        logger.error("failed :: ",ar.cause());
+        message.reply(ar.cause().getMessage());
+      }
+    });
+  }
+
+  private void deleteEmployeeHandler(Message message){
+    Tuple tuple = Tuple.of(Integer.parseInt(message.headers().get("employeeId")));
+    client.preparedQuery(QUERY_DELETE_EMPLOYEE,tuple, ar ->{
+      if(ar.succeeded()){
+        message.reply(new JsonArray().add("Employee Data Deleted !"));
+      }else{
+        logger.error("failed :: ",ar.cause());
+        message.reply(ar.cause().getMessage());
+      }
+    });
   }
 
   private void saveEmployeeHandler(Message msg){

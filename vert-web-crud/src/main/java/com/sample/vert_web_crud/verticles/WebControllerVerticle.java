@@ -24,7 +24,7 @@ public class WebControllerVerticle extends AbstractVerticle {
     router.get("/api/employee").handler(this::getEmployees);
     router.get("/api/employee/:id").handler(this::getEmployeeById);
     router.post("/api/employee").handler(this::saveEmployee);
-    router.put("/api/employee").handler(this::updateEmployee);
+    router.put("/api/employee/:id").handler(this::updateEmployee);
     router.delete("/api/employee/:id").handler(this::deleteEmployee);
 
     vertx.createHttpServer()
@@ -41,14 +41,32 @@ public class WebControllerVerticle extends AbstractVerticle {
   private  void deleteEmployee(RoutingContext routingContext){
     String employeeId = routingContext.request().getParam("id");
     logger.debug(" id : {}", employeeId );
+    DeliveryOptions options = new DeliveryOptions().addHeader("employeeId",employeeId);
+    vertx.eventBus().request("DeleteEmployee",null,options,ar ->{
+      if(ar.succeeded()){
+        routingContext.response().setStatusCode(200).end("Record Deleted : " +  employeeId);
+      }else {
+        ReplyException  replyException = (ReplyException) ar.cause();
+        routingContext.response().putHeader("content-type", "application/json").setStatusCode(replyException.failureCode()).end(replyException.getMessage());
+      }
+    });
 
-    routingContext.response().setStatusCode(200).end(employeeId);
   }
 
   private  void updateEmployee(RoutingContext routingContext){
     JsonObject jsonObject =  routingContext.getBodyAsJson();
-    logger.debug(jsonObject.toString());
-    routingContext.response().setStatusCode(200).end(jsonObject.toString());
+    String employeeId = routingContext.request().getParam("id");
+    DeliveryOptions options = new DeliveryOptions().addHeader("employeeId",employeeId);
+    logger.debug("id : {} , json body : {}" , employeeId,jsonObject.toString());
+    vertx.eventBus().request("UpdateEmployee",jsonObject,options,ar ->{
+      if(ar.succeeded()){
+        routingContext.response().setStatusCode(200).end("Record updated : " +  employeeId);
+      }else {
+        ReplyException  replyException = (ReplyException) ar.cause();
+        routingContext.response().putHeader("content-type", "application/json").setStatusCode(replyException.failureCode()).end(replyException.getMessage());
+      }
+    });
+
   }
 
   private void saveEmployee(RoutingContext routingContext){
