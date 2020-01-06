@@ -27,8 +27,8 @@ public class VertxUnitTest {
       System.out.println(">> After Each");
     });
     ReportOptions consoleReport =  new ReportOptions().setTo("console");
-    ReportOptions junitReport =  new ReportOptions().setTo("file:.").setFormat("junit");
+    /*ReportOptions junitReport =  new ReportOptions().setTo("file:.").setFormat("junit");*/
 
-    suite.run(new TestOptions().addReporter(consoleReport).addReporter(junitReport));
+    suite.run(new TestOptions().addReporter(consoleReport));
   }
 }
