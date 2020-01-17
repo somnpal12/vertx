@@ -1,18 +1,18 @@
 <configuration>
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] [%highlight(%level)] %logger{5} [%L][%M]- %msg%n</pattern>
-    </encoder>
-  </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [%highlight(%level)] %logger{5} [%L][%M]- %msg%n</pattern>
+        </encoder>
+    </appender>
 
-  <logger name="com.mchange.v2" level="warn"/>
-  <logger name="io.netty" level="warn"/>
-  <logger name="io.vertx" level="info"/>
-  <logger name=" com.sample" level="debug" />
+    <logger name="com.mchange.v2" level="warn"/>
+    <logger name="io.netty" level="warn"/>
+    <logger name="io.vertx" level="info"/>
+    <logger name=" com.sample" level="debug"/>
 
-  <root level="debug">
-    <appender-ref ref="STDOUT"/>
-  </root>
+    <root level="debug">
+        <appender-ref ref="STDOUT"/>
+    </root>
 
 </configuration>
