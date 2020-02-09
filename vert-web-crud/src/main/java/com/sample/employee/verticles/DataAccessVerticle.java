@@ -2,6 +2,7 @@ package com.sample.employee.verticles;
 
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -89,20 +90,7 @@ public class DataAccessVerticle extends AbstractVerticle {
         JsonArray params = new JsonArray().add(msg.headers().get("employeeId"));
         client.preparedQuery(QUERY_FIND_EMPLOYEE_BY_ID, Tuple.of(Integer.parseInt(msg.headers().get("employeeId"))), rowSetAsyncResult -> {
             if (rowSetAsyncResult.succeeded()) {
-                RowSet<Row> rows = rowSetAsyncResult.result();
-                JsonArray jsonArray = new JsonArray();
-                for (Row row : rows) {
-                    JsonObject jsonObject = new JsonObject();
-                    jsonObject.put(row.getColumnName(0).toLowerCase(), row.getValue(0));
-                    jsonObject.put(row.getColumnName(1).toLowerCase(), row.getValue(1));
-                    jsonObject.put(row.getColumnName(2).toLowerCase(), row.getValue(2));
-                    jsonObject.put(row.getColumnName(3).toLowerCase(), row.getValue(3));
-                    jsonObject.put(row.getColumnName(4).toLowerCase(), row.getValue(4));
-                    jsonArray.add(jsonObject);
-
-                }
-                logger.debug(jsonArray.toString());
-                msg.reply(jsonArray);
+                getResult(msg, rowSetAsyncResult);
             } else {
                 logger.error("failed :: ", rowSetAsyncResult.cause());
                 msg.reply(rowSetAsyncResult.cause().getMessage());
@@ -110,6 +98,23 @@ public class DataAccessVerticle extends AbstractVerticle {
             //client.close();
         });
 
+    }
+
+    private void getResult(Message msg, AsyncResult<RowSet<Row>> rowSetAsyncResult) {
+        RowSet<Row> rows = rowSetAsyncResult.result();
+        JsonArray jsonArray = new JsonArray();
+        for (Row row : rows) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.put(row.getColumnName(0).toLowerCase(), row.getValue(0));
+            jsonObject.put(row.getColumnName(1).toLowerCase(), row.getValue(1));
+            jsonObject.put(row.getColumnName(2).toLowerCase(), row.getValue(2));
+            jsonObject.put(row.getColumnName(3).toLowerCase(), row.getValue(3));
+            jsonObject.put(row.getColumnName(4).toLowerCase(), row.getValue(4));
+            jsonArray.add(jsonObject);
+
+        }
+        logger.debug(jsonArray.toString());
+        msg.reply(jsonArray);
     }
 
     public void fetchEmployeeListHandler(Message msg) {
@@ -128,21 +133,7 @@ public class DataAccessVerticle extends AbstractVerticle {
                 SqlConnection conn = sqlConnectionAsyncResult.result();
                 conn.query(QUERY_FETCH_ALL_EMPLOYEE, ar -> {
                     if (ar.succeeded()) {
-                        RowSet<Row> rows = ar.result();
-                        JsonArray jsonArray = new JsonArray();
-                        for (Row row : rows) {
-                            JsonObject jsonObject = new JsonObject();
-                            jsonObject.put(row.getColumnName(0).toLowerCase(), row.getValue(0));
-                            jsonObject.put(row.getColumnName(1).toLowerCase(), row.getValue(1));
-                            jsonObject.put(row.getColumnName(2).toLowerCase(), row.getValue(2));
-                            jsonObject.put(row.getColumnName(3).toLowerCase(), row.getValue(3));
-                            jsonObject.put(row.getColumnName(4).toLowerCase(), row.getValue(4));
-                            jsonArray.add(jsonObject);
-
-                        }
-                        logger.debug(jsonArray.toString());
-                        //msg.reply(new JsonObject().put("employee",jsonArray));
-                        msg.reply(jsonArray);
+                        getResult(msg, ar);
                     } else {
                         logger.error("", ar.cause());
                     }
