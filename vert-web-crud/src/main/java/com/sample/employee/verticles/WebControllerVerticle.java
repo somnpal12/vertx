@@ -1,6 +1,7 @@
 package com.sample.employee.verticles;
 
 
+import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -14,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WebControllerVerticle extends AbstractVerticle {
-    private final Logger logger = LoggerFactory.getLogger(WebControllerVerticle.class);
+    private final Logger log = LoggerFactory.getLogger(WebControllerVerticle.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -27,20 +28,27 @@ public class WebControllerVerticle extends AbstractVerticle {
         router.put("/api/employee/:id").handler(this::updateEmployee);
         router.delete("/api/employee/:id").handler(this::deleteEmployee);
 
-        vertx.createHttpServer()
-                .requestHandler(router)
-                .listen(8181, httpServerAsyncResult -> {
-                    if (httpServerAsyncResult.succeeded()) {
-                        logger.info("server running at 8181");
-                    } else {
-                        logger.warn("", httpServerAsyncResult.cause());
-                    }
-                });
+        ConfigRetriever retriever = ConfigRetriever.create(vertx);
+        retriever.getConfig(json -> {
+            JsonObject config = json.result();
+            vertx.createHttpServer()
+                    .requestHandler(router)
+                    .listen(config.getInteger("http.port"), httpServerAsyncResult -> {
+                        if (httpServerAsyncResult.succeeded()) {
+                            log.info("server running at {}",config.getInteger("http.port"));
+                        } else {
+                            log.warn("", httpServerAsyncResult.cause());
+                        }
+                    });
+        });
+
+
+
     }
 
     private void deleteEmployee(RoutingContext routingContext) {
         String employeeId = routingContext.request().getParam("id");
-        logger.debug(" id : {}", employeeId);
+        log.debug(" id : {}", employeeId);
         DeliveryOptions options = new DeliveryOptions().addHeader("employeeId", employeeId);
         vertx.eventBus().request("DeleteEmployee", null, options, ar -> {
             if (ar.succeeded()) {
@@ -57,7 +65,7 @@ public class WebControllerVerticle extends AbstractVerticle {
         JsonObject jsonObject = routingContext.getBodyAsJson();
         String employeeId = routingContext.request().getParam("id");
         DeliveryOptions options = new DeliveryOptions().addHeader("employeeId", employeeId);
-        logger.debug("id : {} , json body : {}", employeeId, jsonObject.toString());
+        log.debug("id : {} , json body : {}", employeeId, jsonObject.toString());
         vertx.eventBus().request("UpdateEmployee", jsonObject, options, ar -> {
             if (ar.succeeded()) {
                 routingContext.response().setStatusCode(200).end("Record updated : " + employeeId);
@@ -72,7 +80,7 @@ public class WebControllerVerticle extends AbstractVerticle {
     private void saveEmployee(RoutingContext routingContext) {
         JsonObject jsonObject = routingContext.getBodyAsJson();
         DeliveryOptions options = new DeliveryOptions();
-        logger.debug(jsonObject.toString());
+        log.debug(jsonObject.toString());
         vertx.eventBus().request("SaveEmployee", jsonObject, options, reply -> {
             if (reply.succeeded()) {
                 JsonArray jsonArray = (JsonArray) reply.result().body();
@@ -88,17 +96,17 @@ public class WebControllerVerticle extends AbstractVerticle {
 
     private void getEmployeeById(RoutingContext routingContext) {
         String employeeId = routingContext.request().getParam("id");
-        logger.debug(" id : {}", employeeId);
+        log.debug(" id : {}", employeeId);
         DeliveryOptions options = new DeliveryOptions().addHeader("employeeId", employeeId);
 
         vertx.eventBus().request("SearchEmployeeById", null, options, reply -> {
             if (reply.succeeded()) {
-                logger.info(reply.result().body().toString());
+                log.info(reply.result().body().toString());
                 JsonArray jsonArray = (JsonArray) reply.result().body();
                 routingContext.response().putHeader("content-type", "application/json").setStatusCode(200)
                         .end(jsonArray.toString());
             } else {
-                logger.warn("", reply.cause());
+                log.warn("", reply.cause());
             }
         });
     }
@@ -109,13 +117,13 @@ public class WebControllerVerticle extends AbstractVerticle {
 
         vertx.eventBus().request("ShowAllEmployee", null, options, reply -> {
             if (reply.succeeded()) {
-                logger.info(reply.result().body().toString());
+                log.info(reply.result().body().toString());
                 JsonArray jsonArray = (JsonArray) reply.result().body();
                 routingContext.response().putHeader("content-type", "application/json").setStatusCode(200)
                         .end(jsonArray.toString());
             } else {
                 // routingContext.response().setStatusCode(500).end("No records found...");
-                logger.warn("", reply.cause());
+                log.warn("", reply.cause());
             }
         });
 

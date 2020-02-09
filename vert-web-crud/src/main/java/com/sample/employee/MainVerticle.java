@@ -2,9 +2,11 @@ package com.sample.employee;
 
 import com.sample.employee.verticles.DataAccessVerticle;
 import com.sample.employee.verticles.WebControllerVerticle;
+import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         final AtomicInteger serviceCount = new AtomicInteger();
+
         verticleList.stream().forEach(verticle -> vertx.deployVerticle(verticle, response -> {
             if (response.failed()) {
                 logger.info("unable to deploy verticle :: " + verticle.getClass().getSimpleName() + " : " + response.cause());

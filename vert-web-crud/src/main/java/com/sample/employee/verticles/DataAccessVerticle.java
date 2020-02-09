@@ -1,5 +1,6 @@
 package com.sample.employee.verticles;
 
+import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -11,6 +12,8 @@ import io.vertx.sqlclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class DataAccessVerticle extends AbstractVerticle {
     private final Logger logger = LoggerFactory.getLogger(DataAccessVerticle.class);
     PgPool client = null;
@@ -18,12 +21,25 @@ public class DataAccessVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         logger.debug("--1--");
-        client = dbInit();
-        vertx.eventBus().consumer("ShowAllEmployee", this::fetchEmployeeListHandler);
-        vertx.eventBus().consumer("SearchEmployeeById", this::findEmployeeByIdHandler);
-        vertx.eventBus().consumer("SaveEmployee", this::saveEmployeeHandler);
-        vertx.eventBus().consumer("UpdateEmployee", this::updateEmployeeHandler);
-        vertx.eventBus().consumer("DeleteEmployee", this::deleteEmployeeHandler);
+
+        ConfigRetriever retriever = ConfigRetriever.create(vertx);
+        retriever.getConfig(json -> {
+            logger.debug("json");
+            JsonObject config = json.result();
+            logger.debug(config.getJsonObject("datasource").toString());
+
+            client = dbInit(config.getJsonObject("datasource"));
+            vertx.eventBus().consumer("ShowAllEmployee", this::fetchEmployeeListHandler);
+            vertx.eventBus().consumer("SearchEmployeeById", this::findEmployeeByIdHandler);
+            vertx.eventBus().consumer("SaveEmployee", this::saveEmployeeHandler);
+            vertx.eventBus().consumer("UpdateEmployee", this::updateEmployeeHandler);
+            vertx.eventBus().consumer("DeleteEmployee", this::deleteEmployeeHandler);
+
+        });
+
+
+
+
 
     }
 
@@ -138,19 +154,21 @@ public class DataAccessVerticle extends AbstractVerticle {
         });
     }
 
-    private PgPool dbInit() {
+    private PgPool dbInit(JsonObject dataSourceConfig) {
+        logger.debug(">>> db init");
         PgConnectOptions connectOptions = new PgConnectOptions()
-                .setPort(5432)
-                .setHost("localhost")
-                .setDatabase("postgres")
-                .setUser("postgres")
-                .setPassword("postgres").setLogActivity(true)/*.addProperty("search_path","SAMPLE")*/;
+                .setPort(dataSourceConfig.getInteger("port"))
+                .setHost(dataSourceConfig.getString("host"))
+                .setDatabase(dataSourceConfig.getString("schema"))
+                .setUser(dataSourceConfig.getString("user"))
+                .setPassword(dataSourceConfig.getString("password")).setLogActivity(true)/*.addProperty("search_path","SAMPLE")*/;
 
         // Pool options
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the client pool
         return PgPool.pool(vertx, connectOptions, poolOptions);
+
 
     }
 

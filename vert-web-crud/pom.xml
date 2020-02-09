@@ -16,7 +16,7 @@
         <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
         <exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
 
-        <vertx.version>3.8.4</vertx.version>
+        <vertx.version>3.8.5</vertx.version>
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
 
         <main.verticle>com.sample.employee.MainVerticle</main.verticle>
@@ -61,6 +61,10 @@
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
+            <artifactId>vertx-config</artifactId>
+         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
             <artifactId>vertx-junit5</artifactId>
             <scope>test</scope>
         </dependency>
@@ -80,7 +84,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-unit</artifactId>
-            <version>3.8.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
