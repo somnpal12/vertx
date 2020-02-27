@@ -13,7 +13,7 @@ import io.vertx.sqlclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicReference;
+import static com.sample.employee.utils.DatabaseQueries.*;
 
 public class DataAccessVerticle extends AbstractVerticle {
     private final Logger logger = LoggerFactory.getLogger(DataAccessVerticle.class);
@@ -163,11 +163,6 @@ public class DataAccessVerticle extends AbstractVerticle {
 
     }
 
-    private static String QUERY_FETCH_ALL_EMPLOYEE = "SELECT * FROM sample.\"EMPLOYEE\"";
-    private static String QUERY_FIND_EMPLOYEE_BY_ID = "SELECT * FROM sample.\"EMPLOYEE\" WHERE \"ID\" = $1";
-    private static String QUERY_INSERT_EMPLOYEE = "INSERT INTO sample.\"EMPLOYEE\"(\"NAME\", \"AGE\", \"ADDRESS\", \"SALARY\") VALUES($1,$2,$3,$4)";
-    private static String QUERY_UPDATE_EMPLOYEE = "UPDATE sample.\"EMPLOYEE\" SET \"SALARY\"=$1 WHERE \"ID\" = $2 ";
-    private static String QUERY_DELETE_EMPLOYEE = "DELETE FROM sample.\"EMPLOYEE\" WHERE \"ID\" = $1";
 
 
 }

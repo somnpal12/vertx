@@ -1,0 +1,55 @@
+{
+        "name" : "MyRestWorkItemDefinitions",
+        "displayName" : "MyRestWorkItemDefinitions",
+        "defaultHandler" : "mvel: new com.redhat.MyRestWorkItemWorkItemHandler()",
+        "documentation" : "MyRestWorkItemHandler/index.html",
+        "module" : "MyRestWorkItemHandler",
+        "icon" : "MyRestWorkItemDefinitions.png",
+            "category" : "MyRestWorkItemHandler",
+            "description" : "Workitem Desciption",
+            "keywords" : [
+                                ""
+
+            ],
+                "isaction" : "true",
+                "actiontitle" : "Sample Title",
+            "requiresauth" : "true",
+                "authparams" : [
+                                           {
+                                               "name" : "SampleParam"
+                                           }
+                    ,{
+                                               "name" : "SampleParamTwo"
+                                           }
+
+                ],
+                "authreferencesite" : "referenceSiteURL",
+            "parameters" : [
+                                   {
+                                       "name" : "SampleParam",
+                                       "type" : "new StringDataType()"
+                                   }
+                ,{
+                                       "name" : "SampleParamTwo",
+                                       "type" : "new StringDataType()"
+                                   }
+
+            ],
+            "results" : [
+                                   {
+                                       "name" : "SampleResult",
+                                       "type" : "new StringDataType()"
+                                   }
+
+            ],
+            "mavenDependencies" : [
+                                   {
+                                       "groupId" : "com.redhat",
+                                       "artifactId" : "MyRestWorkItemHandler",
+                                       "version" : "7.29.0.Final"
+                                   }
+
+            ]
+}
+
+,

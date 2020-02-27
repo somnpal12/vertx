@@ -1,0 +1,27 @@
+[
+        [
+            "name" : "MyRestWorkItemDefinitions",
+            "displayName" : "MyRestWorkItemDefinitions",
+            "category" : "MyRestWorkItemHandler",
+            "description" : "",
+            "defaultHandler" : "mvel: new com.redhat.MyRestWorkItemWorkItemHandler()",
+            "documentation" : "MyRestWorkItemHandler/index.html",
+
+            "parameters" : [
+                                "SampleParam" : new StringDataType()
+                ,"SampleParamTwo" : new StringDataType()
+
+            ],
+            "results" : [
+                                "SampleResult" : new StringDataType()
+
+            ],
+            "mavenDependencies" : [
+                                 "com.redhat:MyRestWorkItemHandler:7.29.0.Final"
+
+            ],
+            "icon" : "MyRestWorkItemDefinitions.png"
+
+        ]
+
+]

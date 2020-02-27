@@ -1,12 +1,10 @@
 package com.sample.employee;
 
-import com.sample.employee.verticles.DataAccessVerticle;
-import com.sample.employee.verticles.WebControllerVerticle;
-import io.vertx.config.ConfigStoreOptions;
+import com.sample.employee.verticles.EmployeeApiServiceVerticle;
+import com.sample.employee.verticles.EmployeeDataServiceVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainVerticle extends AbstractVerticle {
     private final Logger logger = LoggerFactory.getLogger(MainVerticle.class);
-    List<AbstractVerticle> verticleList = Arrays.asList(new WebControllerVerticle(), new DataAccessVerticle());
+    //List<AbstractVerticle> verticleList = Arrays.asList(new WebControllerVerticle(), new DataAccessVerticle());
+    List<AbstractVerticle> verticleList = Arrays.asList(new EmployeeApiServiceVerticle(), new EmployeeDataServiceVerticle());
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
